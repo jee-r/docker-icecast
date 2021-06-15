@@ -39,6 +39,10 @@ kind: pipeline
 name: test
 type: docker
 
+trigger:
+  instance:
+      - cloud.drone.io
+
 steps:
 - name: test
   image: plugins/docker:latest
@@ -60,6 +64,10 @@ steps:
 kind: pipeline                                                                                                                                                                                    
 name: mirroring
 type: docker
+
+trigger:
+  instance:
+      - cloud.drone.io
 
 steps:
 - name: mirroring_c0de.in
