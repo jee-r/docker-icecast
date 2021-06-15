@@ -2,6 +2,10 @@ kind: pipeline
 name: docker_build
 type: docker
 
+trigger:
+  instance:
+      - cloud.drone.io
+
 steps:
   #- name: tag
   #  image: alpine:latest
@@ -99,8 +103,12 @@ steps:
 ---
 
 kind: pipeline
-name: default
+name: c0de.in
 type: kubernetes
+
+trigger:
+  instance:
+      - drone.c0de.in
 
 steps:
 - name: tag
