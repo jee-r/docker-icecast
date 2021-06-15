@@ -17,11 +17,11 @@ steps:
     username: j33r
     password:
       from_secret: DOCKER_HUB_TOKEN
-    when:
-      branch:
-        - master
-      event:
-        exclude:
+  when:
+    branch:
+      - master
+    event:
+      exclude:
         - pull_request
 
 - name: dev_build
@@ -35,11 +35,11 @@ steps:
     username: j33r
     password:
       from_secret: DOCKER_HUB_TOKEN
-    when:
-      branch:
-        - dev
-      event:
-        exclude:
+  when:
+    branch:
+      - dev
+    event:
+      exclude:
         - pull_request
 
 ---
