@@ -4,7 +4,7 @@ type: docker
 
 steps:
 
-- name: build
+- name: master_build
   image: plugins/docker:latest
   settings:
     repo: j33r/icecast
@@ -13,13 +13,35 @@ steps:
         - latest
         - stable 
         - alpine
-        - $DRONE_COMMIT_SHA
+        - $$DRONE_COMMIT_SHA
     username: j33r
     password:
       from_secret: DOCKER_HUB_TOKEN
-    event:
-      exclude:
-        - pull_request
+    when:
+      event:
+        exclude:
+          - pull_request
+      branch:
+        - master
+
+
+- name: dev_build
+  image: plugins/docker:latest
+  settings:
+    repo: j33r/icecast
+    dockerfile: Dockerfile
+    tags:
+        - dev 
+        - $$DRONE_COMMIT_SHA
+    username: j33r
+    password:
+      from_secret: DOCKER_HUB_TOKEN
+    when:
+      event:
+        exclude:
+          - pull_request
+      branch:
+        - dev
 
 ---
 
