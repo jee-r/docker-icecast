@@ -1,0 +1,94 @@
+kind: pipeline                                                                                                                                                                                    
+name: docker_build
+type: docker
+
+steps:
+  #- name: tag
+  #  image: alpine:latest
+  #  commands:
+  #    - echo -n $DRONE_BRANCH, $DRONE_COMMIT_SHA > .tags
+  #    - if [ $DRONE_BRANCH == "master" ]; then echo -n ", lastest, stable" >> .tags ;fi
+
+- name: build
+  image: plugins/docker:latest
+  settings:
+    repo: j33r/icecast
+    context: main
+    dockerfile: Dockerfile
+    tags:
+        - latest
+        - stable 
+        - alpine
+        - $DRONE_COMMIT_SHA
+    username: j33r
+    password:
+      from_secret: DOCKER_HUB_TOKEN
+  when:
+    instance:
+      - cloud.drone.io
+    event:
+      exclude:
+        - pull_request
+
+---
+
+kind: pipeline                                                                                                                                                                                    
+name: test
+type: docker
+
+steps:
+- name: test
+  image: plugins/docker:latest
+  settings:
+    repo: j33r/icecast
+    tags: latest
+    dockerfile: Dockerfile
+    username: j33r
+    password:
+      from_secret: DOCKER_HUB_TOKEN
+    dry_run: true
+  when:
+    event:
+      - pull_request
+
+---
+
+kind: pipeline                                                                                                                                                                                    
+name: mirroring
+type: docker
+
+steps:
+- name: mirroring_c0de.in
+  pull: always
+  image: j33r/git-mirror:latest
+  failure: ignore
+  environment:
+    GIT_MIRROR_USER: jee
+    GIT_MIRROR_TOKEN:
+      from_secret: C0DEIN_TOKEN
+    GIT_MIRROR_REPO: git.c0de.in/docker/icecast.git
+  when:
+    branch:
+      - master
+      - dev
+    event:
+      exclude:
+        - pull_request
+
+- name: mirroring_framagit
+  pull: always
+  image: j33r/git-mirror:latest
+  failure: ignore
+  environment:
+    GIT_MIRROR_USER: jee
+    GIT_MIRROR_TOKEN:
+      from_secret: FRAMAGIT_TOKEN
+    GIT_MIRROR_REPO: framagit.org/jee/docker-icecast.git
+  when:
+    branch:
+      - master
+      - dev
+    event:
+      exclude:
+        - pull_request
+
