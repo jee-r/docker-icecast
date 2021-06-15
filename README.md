@@ -69,5 +69,5 @@ By [default](rootfs/config/icecast.xml) access and error logs are binded to `STD
 
 # License
 
-This project is under the [GNU Generic Public License v3](LICENSE.md) to allow free use while ensuring it stays open.
+This project is under the [GNU Generic Public License v3](LICENSE) to allow free use while ensuring it stays open.
 
