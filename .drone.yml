@@ -13,7 +13,6 @@ steps:
   image: plugins/docker:latest
   settings:
     repo: j33r/icecast
-    context: main
     dockerfile: Dockerfile
     tags:
         - latest
@@ -50,7 +49,8 @@ steps:
   when:
     event:
       - pull_request
-
+    instance:
+      - cloud.drone.io
 ---
 
 kind: pipeline                                                                                                                                                                                    
@@ -74,6 +74,8 @@ steps:
     event:
       exclude:
         - pull_request
+    instance:
+      - cloud.drone.io
 
 - name: mirroring_framagit
   pull: always
@@ -91,4 +93,50 @@ steps:
     event:
       exclude:
         - pull_request
+    instance:
+      - cloud.drone.io
+
+---
+
+kind: pipeline
+name: default
+type: kubernetes
+
+steps:
+- name: tag
+  image: alpine:latest
+  commands:
+    - echo -n $DRONE_BRANCH, $DRONE_COMMIT_SHA > .tags
+    - if [ $DRONE_BRANCH == "master" ]; then echo -n ", lastest, stable" >> .tags ;fi
+
+- name: build
+  image: plugins/docker:latest
+  settings:
+    repo: j33r/icecast
+    dockerfile: Dockerfile
+    username: j33r
+    password:
+      from_secret: DOCKER_HUB_TOKEN
+  when:
+    event:
+      exclude:
+        - pull_request
+    instance:
+      - drone.c0de.in
+
+- name: test
+  image: plugins/docker:latest
+  settings:
+    repo: j33r/icecast
+    tags: latest
+    dockerfile: Dockerfile
+    username: j33r
+    password:
+      from_secret: DOCKER_HUB_TOKEN
+    dry_run: true
+  when:
+    event:
+      - pull_request
+    instance:
+      - drone.c0de.in
 
