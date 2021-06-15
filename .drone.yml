@@ -22,8 +22,8 @@ steps:
         exclude:
         - pull_request
       branch:
+        include:
         - master
-
 
 - name: dev_build
   image: plugins/docker:latest
@@ -41,6 +41,7 @@ steps:
         exclude:
         - pull_request
       branch:
+        include:
         - dev
 
 ---
