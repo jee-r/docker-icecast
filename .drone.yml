@@ -13,14 +13,14 @@ steps:
         - latest
         - stable 
         - alpine
-        - $$DRONE_COMMIT_SHA
+        - ${DRONE_COMMIT_SHA}
     username: j33r
     password:
       from_secret: DOCKER_HUB_TOKEN
     when:
       event:
         exclude:
-          - pull_request
+        - pull_request
       branch:
         - master
 
@@ -32,14 +32,14 @@ steps:
     dockerfile: Dockerfile
     tags:
         - dev 
-        - $$DRONE_COMMIT_SHA
+        - ${DRONE_COMMIT_SHA}
     username: j33r
     password:
       from_secret: DOCKER_HUB_TOKEN
     when:
       event:
         exclude:
-          - pull_request
+        - pull_request
       branch:
         - dev
 
