@@ -1,5 +1,12 @@
 # Icecast docker image
 
+[![Drone (cloud)](https://img.shields.io/drone/build/jee-r/docker-icecast?&style=flat-square)](https://cloud.drone.io/jee-r/docker-icecast)
+[![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/j33r/icecast?style=flat-square)](https://microbadger.com/images/j33r/icecast)
+[![MicroBadger Layers](https://img.shields.io/microbadger/layers/j33r/icecast?style=flat-square)](https://microbadger.com/images/j33r/icecast)
+[![Docker Pulls](https://img.shields.io/docker/pulls/j33r/icecast?style=flat-square)](https://hub.docker.com/r/j33r/icecast)
+[![DockerHub](https://shields.io/badge/Dockerhub-j33r/icecast?logo=docker&style=flat-square)](https://hub.docker.com/r/j33r/icecast)
+
+
 A docker image for [Icecast](https://www.icecast.org) based on [Alpine Linux](https://alpinelinux.org) and **[without root process](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#user)**
 
 ## What is Icecast :
