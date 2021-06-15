@@ -18,12 +18,11 @@ steps:
     password:
       from_secret: DOCKER_HUB_TOKEN
     when:
+      branch:
+        - master
       event:
         exclude:
         - pull_request
-      branch:
-        include:
-        - master
 
 - name: dev_build
   image: plugins/docker:latest
@@ -37,12 +36,11 @@ steps:
     password:
       from_secret: DOCKER_HUB_TOKEN
     when:
+      branch:
+        - dev
       event:
         exclude:
         - pull_request
-      branch:
-        include:
-        - dev
 
 ---
 
