@@ -2,16 +2,7 @@ kind: pipeline
 name: docker_build
 type: docker
 
-trigger:
-  instance:
-      - cloud.drone.io
-
 steps:
-  #- name: tag
-  #  image: alpine:latest
-  #  commands:
-  #    - echo -n $DRONE_BRANCH, $DRONE_COMMIT_SHA > .tags
-  #    - if [ $DRONE_BRANCH == "master" ]; then echo -n ", lastest, stable" >> .tags ;fi
 
 - name: build
   image: plugins/docker:latest
@@ -26,9 +17,6 @@ steps:
     username: j33r
     password:
       from_secret: DOCKER_HUB_TOKEN
-  when:
-    instance:
-      - cloud.drone.io
     event:
       exclude:
         - pull_request
@@ -38,10 +26,6 @@ steps:
 kind: pipeline                                                                                                                                                                                    
 name: test
 type: docker
-
-trigger:
-  instance:
-      - cloud.drone.io
 
 steps:
 - name: test
@@ -57,17 +41,12 @@ steps:
   when:
     event:
       - pull_request
-    instance:
-      - cloud.drone.io
+
 ---
 
 kind: pipeline                                                                                                                                                                                    
 name: mirroring
 type: docker
-
-trigger:
-  instance:
-      - cloud.drone.io
 
 steps:
 - name: mirroring_c0de.in
@@ -86,8 +65,6 @@ steps:
     event:
       exclude:
         - pull_request
-    instance:
-      - cloud.drone.io
 
 - name: mirroring_framagit
   pull: always
@@ -105,54 +82,3 @@ steps:
     event:
       exclude:
         - pull_request
-    instance:
-      - cloud.drone.io
-
----
-
-kind: pipeline
-name: c0de.in
-type: kubernetes
-
-trigger:
-  instance:
-      - drone.c0de.in
-
-steps:
-- name: tag
-  image: alpine:latest
-  commands:
-    - echo -n $DRONE_BRANCH, $DRONE_COMMIT_SHA > .tags
-    - if [ $DRONE_BRANCH == "master" ]; then echo -n ", lastest, stable" >> .tags ;fi
-
-- name: build
-  image: plugins/docker:latest
-  settings:
-    repo: j33r/icecast
-    dockerfile: Dockerfile
-    username: j33r
-    password:
-      from_secret: DOCKER_HUB_TOKEN
-  when:
-    event:
-      exclude:
-        - pull_request
-    instance:
-      - drone.c0de.in
-
-- name: test
-  image: plugins/docker:latest
-  settings:
-    repo: j33r/icecast
-    tags: latest
-    dockerfile: Dockerfile
-    username: j33r
-    password:
-      from_secret: DOCKER_HUB_TOKEN
-    dry_run: true
-  when:
-    event:
-      - pull_request
-    instance:
-      - drone.c0de.in
-
