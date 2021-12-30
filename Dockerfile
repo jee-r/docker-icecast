@@ -1,10 +1,11 @@
-FROM alpine:3.13
+FROM alpine:3.14
 
 LABEL name="docker-icecast" \
       maintainer="Jee jee@jeer.fr" \
       description="Icecast is free server software for streaming multimedia." \
       url="https://icecast.org" \
-      org.label-schema.vcs-url="https://github.com/jee-r/docker-icecast"
+      org.label-schema.vcs-url="https://github.com/jee-r/docker-icecast" \
+      org.opencontainers.image.source="https://github.com/jee-r/docker-icecast"
 
 ARG ICECAST_VERSION="2.4.4"
 
