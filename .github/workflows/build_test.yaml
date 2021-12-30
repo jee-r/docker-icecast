@@ -1,0 +1,28 @@
+name: Build_Test
+on:
+  pull_request:
+    branches:
+      - master
+      - dev
+  push:
+    branches:
+      - '*'
+      - '!master'
+      - '!dev'
+jobs:
+  build:
+    name: Test build docker image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          install: true
+          version: latest
+          driver-opts: image=moby/buildkit:master
+      - name: Build docker image
+        run: |
+          docker build . 
