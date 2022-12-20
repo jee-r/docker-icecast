@@ -1,4 +1,4 @@
-FROM alpine:3.14
+FROM alpine:3.17
 
 LABEL name="docker-icecast" \
       maintainer="Jee jee@jeer.fr" \
