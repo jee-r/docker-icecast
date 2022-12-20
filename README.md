@@ -1,10 +1,10 @@
 # Icecast docker image
 
-[![Drone (cloud)](https://img.shields.io/drone/build/jee-r/docker-icecast?&style=flat-square)](https://cloud.drone.io/jee-r/docker-icecast)
 [![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/j33r/icecast?style=flat-square)](https://microbadger.com/images/j33r/icecast)
-[![MicroBadger Layers](https://img.shields.io/microbadger/layers/j33r/icecast?style=flat-square)](https://microbadger.com/images/j33r/icecast)
+![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/jee-r/docker-icecast/deploy.yaml?branch=main&style=flat-square)
 [![Docker Pulls](https://img.shields.io/docker/pulls/j33r/icecast?style=flat-square)](https://hub.docker.com/r/j33r/icecast)
-[![DockerHub](https://shields.io/badge/Dockerhub-j33r/icecast-%232496ED?logo=docker&style=flat-square)](https://hub.docker.com/r/j33r/icecast)
+[![DockerHub](https://img.shields.io/badge/Dockerhub-j33r/icecast-%232496ED?logo=docker&style=flat-square)](https://hub.docker.com/r/j33r/icecast)
+[![ghcr.io](https://img.shields.io/badge/ghrc%2Eio-jee%2D-r/icecast-%232496ED?logo=github&style=flat-square)](https://ghcr.io/jee-r/icecast)
 
 
 A docker image for [Icecast](https://www.icecast.org) based on [Alpine Linux](https://alpinelinux.org) and **[without root process](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#user)**
