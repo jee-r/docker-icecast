@@ -1,14 +1,24 @@
 name: Build_Test
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   pull_request:
     branches:
-      - master
+      - main
       - dev
+    paths-ignore:
+      - '**.md'
   push:
     branches:
       - '*'
-      - '!master'
+      - '!main'
       - '!dev'
+    paths-ignore:
+      - '**.md'
+
 jobs:
   build:
     name: Test build docker image

@@ -1,12 +1,20 @@
 name: Deploy
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   workflow_dispatch:
   push:
     branches:
-      - master
+      - main
       - dev
-    schedule:
-      - cron: '33 3 * * 1'
+    paths-ignore:
+      - '**.md'
+  schedule:
+    - cron: '33 3 * * 1'
+
 jobs:
   build:
     name: Build, tag, and publish Docker image

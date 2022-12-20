@@ -2,7 +2,7 @@ name: Mirroring to remote repos
 on:
   push:
     branches:
-      - master
+      - main
       - dev
 jobs:
   mirroring:
