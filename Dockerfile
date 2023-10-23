@@ -1,4 +1,4 @@
-FROM alpine:3.17
+FROM alpine:3.18.4
 
 LABEL name="docker-icecast" \
       maintainer="Jee jee@jeer.fr" \
@@ -13,26 +13,32 @@ COPY rootfs /
 
 RUN apk update && \
     apk upgrade && \
-    apk add --upgrade --no-cache --virtual=build-dependencies \
+    apk add --upgrade --no-cache --virtual=build-dependencies --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main/ \
         build-base \
         curl-dev \
         libxslt-dev \
         libxml2-dev \
         libogg-dev \
+        libflac \
+        libflac++ \
         libvorbis-dev \
         libtheora-dev \
         speex-dev \
         openssl-dev && \
-    apk add --upgrade --no-cache --virtual=base \
+    apk add --upgrade --no-cache --virtual=base --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main/ \
         curl \
         libxslt \
         libxml2 \
         libogg \
+        libflac \
+        libflac++ \
         libvorbis \
         libtheora \
         speex \
         openssl \
         mailcap \
+        ffmpeg \
+        flac \
         tzdata && \
     wget https://downloads.xiph.org/releases/icecast/icecast-$ICECAST_VERSION.tar.gz -O /tmp/icecast-$ICECAST_VERSION.tar.gz && \
     tar -xvf /tmp/icecast-$ICECAST_VERSION.tar.gz -C /tmp/ && \
@@ -48,7 +54,7 @@ RUN apk update && \
     make install && \
     apk del --purge build-dependencies && \
     chmod -R 777 /config && \
-    rm -rf /tmp/* 
+    rm -rf /tmp/*
 
 EXPOSE 8000
 
