@@ -32,7 +32,7 @@ docker run \
     --volume /etc/localtime:/etc/localtime:ro \
     --env TZ=Europe/Paris \
     --env HOME=/config \
-    j33r/icecast:latest
+    ghcr.io/jee-r/icecast:latest
 ```
 
 Note: `--user $(id -u):$(id -g)` should work out of the box on linux systems. If your docker host run on windows or if you want specify an other user id and group id just replace with the appropriates values.   
@@ -42,7 +42,10 @@ Note: `--user $(id -u):$(id -g)` should work out of the box on linux systems. If
 ```yaml
 services:
   icecast:
-    image: j33r/icecast:latest
+    image: ghcr.io/jee-r/icecast:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: icecast
     restart: unless-stopped
     user: "1000:1000"
