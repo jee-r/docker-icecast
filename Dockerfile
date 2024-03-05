@@ -52,5 +52,7 @@ RUN apk update && \
 
 EXPOSE 8000
 
+HEALTHCHECK --interval=1m --timeout=10s --start-period=30s --retries=5 \
+    CMD curl --fail --silent --show-error --output /dev/null --write-out "%{http_code}"  http://127.0.0.1:8000/status-json.xsl || exit 1
 STOPSIGNAL SIGQUIT
 ENTRYPOINT ["icecast", "-c", "/config/icecast.xml"]
