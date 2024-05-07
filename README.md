@@ -52,7 +52,7 @@ services:
     volumes:
     #  - ./config:/config
       - /etc/localtime:/etc/localtime:ro
-    environments:
+    environment:
         - HOME=/config
         - TZ=Europe/Paris
     ports:
