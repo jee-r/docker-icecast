@@ -56,7 +56,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
+          username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and Push
         uses: docker/build-push-action@v6
@@ -66,9 +66,9 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ghcr.io/${{ github.actor }}/${{ env.IMAGE_NAME }}:${{ env.SHORT_SHA }}
-            ghcr.io/${{ github.actor }}/${{ env.IMAGE_NAME }}:${{ env.MAIN_DOCKER_TAG }}
-            ghcr.io/${{ github.actor }}/${{ env.IMAGE_NAME }}:${{ env.GIT_BRANCH }}
+            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.SHORT_SHA }}
+            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.MAIN_DOCKER_TAG }}
+            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.GIT_BRANCH }}
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.SHORT_SHA }}
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.MAIN_DOCKER_TAG }}
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.GIT_BRANCH }} 
