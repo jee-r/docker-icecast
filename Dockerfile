@@ -1,4 +1,4 @@
-FROM alpine:3.22 as builder
+FROM alpine:3.23 as builder
 
 ARG ICECAST_VERSION="2.4.4" \
     SHA256="49b5979f9f614140b6a38046154203ee28218d8fc549888596a683ad604e4d44"
@@ -40,7 +40,7 @@ RUN ./configure \
 RUN make check
 RUN make install DESTDIR=/build/output
 
-FROM alpine:3.22
+FROM alpine:3.23
 
 LABEL name="docker-icecast" \
       maintainer="Jee jee@jeer.fr" \
