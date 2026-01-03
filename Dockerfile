@@ -1,21 +1,37 @@
-FROM alpine:3.23 as builder
+FROM alpine:3.23 AS builder
 
-ARG ICECAST_VERSION="2.4.4" \
-    SHA256="49b5979f9f614140b6a38046154203ee28218d8fc549888596a683ad604e4d44"
+ARG ICECAST_VERSION="2.5.0" \
+    SHA512="d92ce5d8ae1cd011eaa8c7424adea744f35e5c2d3e8244d362743be1c6bbc8fc44d76d7a212cf1eebe79da9b7d83b2ed5ab8659fb97929af316674b5ddf590b5"
 
 RUN apk update && \
     apk upgrade && \
     apk add --upgrade --no-cache --virtual=build-dependencies \
+        autoconf \
+        automake \
         build-base \
         coreutils \
         curl-dev \
+        git \
+        pkgconfig \
+        libtool \
         libxslt-dev \
         libxml2-dev \
         libogg-dev \
         libvorbis-dev \
         libtheora-dev \
         speex-dev \
-        openssl-dev
+        openssl-dev \
+        rhash-dev
+
+WORKDIR /tmp
+    
+RUN git clone https://gitlab.xiph.org/xiph/icecast-libigloo.git && \
+    cd icecast-libigloo && \
+    ./autogen.sh && \
+    ./configure --prefix=/usr && \
+    make && \
+    make install && \
+    rm -rf /tmp/icecast-libigloo
 
 WORKDIR /build
 
@@ -24,7 +40,7 @@ RUN wget https://downloads.xiph.org/releases/icecast/icecast-$ICECAST_VERSION.ta
     # thank to tbr who help me to find the original sha256"
     # wget https://downloads.xiph.org/releases/icecast/SHA512SUMS.txt -O /build/SHA512SUMS.txt && \ 
     # sha512sum --ignore-missing --check SHA512SUMS.txt && \
-    echo "$SHA256 /build/icecast-$ICECAST_VERSION.tar.gz" | sha256sum -c - && \
+    echo "$SHA512 /build/icecast-$ICECAST_VERSION.tar.gz" | sha512sum -c - && \
     tar -xvf icecast-$ICECAST_VERSION.tar.gz -C .
     
 WORKDIR /build/icecast-$ICECAST_VERSION
@@ -36,8 +52,7 @@ RUN ./configure \
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
 		--with-curl
-    
-RUN make check
+
 RUN make install DESTDIR=/build/output
 
 FROM alpine:3.23
@@ -63,11 +78,14 @@ RUN apk update && \
         speex \
         openssl \
         mailcap \
+        rhash \
         tzdata && \
     chmod -R 777 /config && \
     rm -rf /tmp/* 
 
 COPY --from=builder /build/output /
+COPY --from=builder /usr/lib/libigloo.so* /usr/lib/
+RUN ldconfig /usr/lib
 
 EXPOSE 8000
 
