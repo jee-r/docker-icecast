@@ -1,13 +1,14 @@
 FROM alpine:3.23 as builder
 
-ARG ICECAST_VERSION="2.4.4" \
-    SHA256="49b5979f9f614140b6a38046154203ee28218d8fc549888596a683ad604e4d44"
+ARG ICECAST_VERSION="2.5.0" \
+    LIBIGLOO_VERSION="0.9.5"
 
 RUN apk update && \
     apk upgrade && \
     apk add --upgrade --no-cache --virtual=build-dependencies \
         build-base \
         coreutils \
+        curl \
         curl-dev \
         libxslt-dev \
         libxml2-dev \
@@ -15,16 +16,31 @@ RUN apk update && \
         libvorbis-dev \
         libtheora-dev \
         speex-dev \
-        openssl-dev
+        openssl-dev \
+        rhash-dev \
+        autoconf \
+        automake \
+        libtool
+
+WORKDIR /build
+
+RUN wget https://downloads.xiph.org/releases/igloo/libigloo-$LIBIGLOO_VERSION.tar.gz -O /build/libigloo-$LIBIGLOO_VERSION.tar.gz && \
+    wget https://downloads.xiph.org/releases/igloo/SHA512SUMS.txt -O /build/igloo-SHA512SUMS.txt && \
+    sha512sum --ignore-missing --check igloo-SHA512SUMS.txt && \
+    tar -xvf libigloo-$LIBIGLOO_VERSION.tar.gz -C .
+
+WORKDIR /build/libigloo-$LIBIGLOO_VERSION
+
+RUN ./configure --prefix=/usr
+RUN make check
+RUN make install
+RUN make install DESTDIR=/build/output
 
 WORKDIR /build
 
 RUN wget https://downloads.xiph.org/releases/icecast/icecast-$ICECAST_VERSION.tar.gz -O /build/icecast-$ICECAST_VERSION.tar.gz && \
-    # NOTE: due to a bug SHA512SUMS file provide only beta SHA512SUM so we can not verify the download
-    # thank to tbr who help me to find the original sha256"
-    # wget https://downloads.xiph.org/releases/icecast/SHA512SUMS.txt -O /build/SHA512SUMS.txt && \ 
-    # sha512sum --ignore-missing --check SHA512SUMS.txt && \
-    echo "$SHA256 /build/icecast-$ICECAST_VERSION.tar.gz" | sha256sum -c - && \
+    wget https://downloads.xiph.org/releases/icecast/SHA512SUMS.txt -O /build/icecast-SHA512SUMS.txt && \
+    sha512sum --ignore-missing --check icecast-SHA512SUMS.txt && \
     tar -xvf icecast-$ICECAST_VERSION.tar.gz -C .
     
 WORKDIR /build/icecast-$ICECAST_VERSION
@@ -36,8 +52,7 @@ RUN ./configure \
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
 		--with-curl
-    
-RUN make check
+
 RUN make install DESTDIR=/build/output
 
 FROM alpine:3.23
@@ -62,6 +77,7 @@ RUN apk update && \
         libtheora \
         speex \
         openssl \
+        rhash-libs \
         mailcap \
         tzdata && \
     chmod -R 777 /config && \
