@@ -7,9 +7,19 @@
 [![ghcr.io](https://img.shields.io/badge/ghrc%2Eio-jee%2D-r/icecast-%232496ED?logo=github&style=flat-square)](https://ghcr.io/jee-r/icecast)
 
 
-A docker image for [Icecast](https://www.icecast.org) based on [Alpine Linux](https://alpinelinux.org) and **[without root process](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#user)**
+A docker image for [Icecast](https://www.icecast.org) based on [Alpine Linux](https://alpinelinux.org)
 
-## What is Icecast :
+**Multi-architecture support:** `linux/amd64`, `linux/arm64`, `linux/arm/v7`
+
+**Available tags:**
+- `latest` - Latest stable release
+- `<major>`, `<major>.<minor>`, `<major>.<minor>.<patch>` - Icecast semantic versions (e.g., `2`, `2.5`, `2.5.0`)
+- `dev` - Development branch
+- `<commit-sha>` - Specific commit
+
+The container can run **[without root process](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#user)** (see `--user` flag in examples below).
+
+## What is Icecast
 
 From [icecast.org](https://www.icecast.org/):
 
@@ -18,9 +28,9 @@ From [icecast.org](https://www.icecast.org/):
 >   
 >   Icecast is distributed under the GNU GPL, version 2.
 
-## How use this image :
+## How to use this image
 
-### With Docker
+### With Docker / Podman
 
 ```bash
 docker run \
@@ -32,10 +42,13 @@ docker run \
     --volume /etc/localtime:/etc/localtime:ro \
     --env TZ=Europe/Paris \
     --env HOME=/config \
+    --publish 8000:8000 \
     ghcr.io/jee-r/icecast:latest
 ```
 
-Note: `--user $(id -u):$(id -g)` should work out of the box on linux systems. If your docker host run on windows or if you want specify an other user id and group id just replace with the appropriates values.   
+**Notes:**
+- `--user $(id -u):$(id -g)` should work out of the box on Linux systems. If your host runs on Windows or if you want to specify another user/group ID, replace with the appropriate values.
+- Replace `docker` with `podman` if using Podman. For better security, consider running [Podman in rootless mode](https://docs.podman.io/en/latest/markdown/podman.1.html#rootless-mode).   
 
 ### With Docker Compose
 
@@ -61,21 +74,26 @@ services:
 
 ## Volumes
 
-`/config`: If you mount this directory you must provide a `icecast.xml` configuration file in it
+`/config`: If you mount this directory, you must provide an `icecast.xml` configuration file in it.
 
-## Config
+## Configuration
 
-By default image is running icecast with this [default config](rootfs/config/icecast.xml). 
+By default, the image runs Icecast with this [default config](rootfs/config/icecast.xml).
 
 ## Environment variables
 
-To change the timezone of the container set the `TZ` environment variable. The full list of available options can be found on [Wikipedia](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
-
-You can also set the `HOME` environment variable this is usefull to get in the right directory when you attach a shell in your docker container.
+- `TZ`: Timezone for the container (default: UTC). See the full list on [Wikipedia](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
+- `HOME`: Useful to set the working directory when attaching a shell to the container.
 
 ## Logs
 
-By [default](rootfs/config/icecast.xml) access and error logs are binded to `STDOUT` and `STDERR` so you can easily show logs by running `docker logs icecast`
+By [default](rootfs/config/icecast.xml), access and error logs are bound to `STDOUT` and `STDERR`, so you can view them with:
+
+```bash
+docker logs icecast
+# or
+podman logs icecast
+```
 
 # License
 
