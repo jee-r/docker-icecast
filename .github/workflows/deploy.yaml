@@ -46,6 +46,8 @@ jobs:
           echo "ICECAST_VERSION=${ICECAST_VERSION}" >> $GITHUB_ENV
           echo "ICECAST_MAJOR=$(echo ${ICECAST_VERSION} | cut -d. -f1)" >> $GITHUB_ENV
           echo "ICECAST_MINOR=$(echo ${ICECAST_VERSION} | cut -d. -f1-2)" >> $GITHUB_ENV
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v3
@@ -69,7 +71,7 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.SHORT_SHA }}
