@@ -76,7 +76,6 @@ jobs:
 
       - name: Prepare platform pair
         run: |
-          # Convertit linux/amd64 en linux-amd64 pour les noms de fichiers
           platform=${{ matrix.platform }}
           echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
 
