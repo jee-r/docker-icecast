@@ -1,0 +1,185 @@
+name: Deploy (Matrix Multi-Arch)
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - dev
+    paths-ignore:
+      - '**.md'
+  schedule:
+    - cron: '33 3 * * 1'
+
+jobs:
+  prepare:
+    name: Prepare build metadata
+    runs-on: ubuntu-latest
+    outputs:
+      git_branch: ${{ steps.vars.outputs.git_branch }}
+      main_docker_tag: ${{ steps.vars.outputs.main_docker_tag }}
+      image_name: ${{ steps.vars.outputs.image_name }}
+      short_sha: ${{ steps.vars.outputs.short_sha }}
+      icecast_version: ${{ steps.vars.outputs.icecast_version }}
+      icecast_major: ${{ steps.vars.outputs.icecast_major }}
+      icecast_minor: ${{ steps.vars.outputs.icecast_minor }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Calculate variables
+        id: vars
+        run: |
+          # Branch name
+          GIT_BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}
+          echo "git_branch=${GIT_BRANCH}" >> $GITHUB_OUTPUT
+
+          # Main docker tag
+          if [[ "${GIT_BRANCH}" == "main" ]] || [[ "${GIT_BRANCH}" == "master" ]]; then
+            echo "main_docker_tag=latest" >> $GITHUB_OUTPUT
+          else
+            echo "main_docker_tag=${GIT_BRANCH}" >> $GITHUB_OUTPUT
+          fi
+
+          # Image name
+          IMAGE_NAME=$(echo ${{ github.repository }} | sed 's|^jee-r/docker-||g')
+          echo "image_name=${IMAGE_NAME}" >> $GITHUB_OUTPUT
+
+          # Short SHA
+          SHORT_SHA=$(echo ${GITHUB_SHA} | cut -c1-8)
+          echo "short_sha=${SHORT_SHA}" >> $GITHUB_OUTPUT
+
+          # Icecast version
+          ICECAST_VERSION=$(grep -oP 'ARG ICECAST_VERSION="\K[^"]+' Dockerfile)
+          echo "icecast_version=${ICECAST_VERSION}" >> $GITHUB_OUTPUT
+          echo "icecast_major=$(echo ${ICECAST_VERSION} | cut -d. -f1)" >> $GITHUB_OUTPUT
+          echo "icecast_minor=$(echo ${ICECAST_VERSION} | cut -d. -f1-2)" >> $GITHUB_OUTPUT
+
+  build:
+    name: Build ${{ matrix.platform }}
+    runs-on: ubuntu-latest
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - linux/amd64
+          - linux/arm64
+          - linux/arm/v7
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Prepare platform pair
+        run: |
+          # Convertit linux/amd64 en linux-amd64 pour les noms de fichiers
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push by digest
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: ${{ matrix.platform }}
+          outputs: type=image,name=ghcr.io/${{ github.repository_owner }}/${{ needs.prepare.outputs.image_name }},push-by-digest=true,name-canonical=true,push=true
+
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ env.PLATFORM_PAIR }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+    name: Create multi-arch manifest
+    runs-on: ubuntu-latest
+    needs:
+      - prepare
+      - build
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create manifest list and push (GHCR)
+        working-directory: /tmp/digests
+        run: |
+          docker buildx imagetools create \
+            -t ghcr.io/${{ github.repository_owner }}/${{ needs.prepare.outputs.image_name }}:${{ needs.prepare.outputs.short_sha }} \
+            -t ghcr.io/${{ github.repository_owner }}/${{ needs.prepare.outputs.image_name }}:${{ needs.prepare.outputs.main_docker_tag }} \
+            -t ghcr.io/${{ github.repository_owner }}/${{ needs.prepare.outputs.image_name }}:${{ needs.prepare.outputs.git_branch }} \
+            -t ghcr.io/${{ github.repository_owner }}/${{ needs.prepare.outputs.image_name }}:${{ needs.prepare.outputs.icecast_version }} \
+            -t ghcr.io/${{ github.repository_owner }}/${{ needs.prepare.outputs.image_name }}:${{ needs.prepare.outputs.icecast_minor }} \
+            -t ghcr.io/${{ github.repository_owner }}/${{ needs.prepare.outputs.image_name }}:${{ needs.prepare.outputs.icecast_major }} \
+            $(printf 'ghcr.io/${{ github.repository_owner }}/${{ needs.prepare.outputs.image_name }}@sha256:%s ' *)
+
+      - name: Create manifest list and push (DockerHub)
+        working-directory: /tmp/digests
+        run: |
+          docker buildx imagetools create \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ needs.prepare.outputs.image_name }}:${{ needs.prepare.outputs.short_sha }} \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ needs.prepare.outputs.image_name }}:${{ needs.prepare.outputs.main_docker_tag }} \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ needs.prepare.outputs.image_name }}:${{ needs.prepare.outputs.git_branch }} \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ needs.prepare.outputs.image_name }}:${{ needs.prepare.outputs.icecast_version }} \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ needs.prepare.outputs.image_name }}:${{ needs.prepare.outputs.icecast_minor }} \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ needs.prepare.outputs.image_name }}:${{ needs.prepare.outputs.icecast_major }} \
+            $(printf '${{ secrets.DOCKERHUB_USERNAME }}/${{ needs.prepare.outputs.image_name }}@sha256:%s ' *)
+
+      - name: Inspect GHCR image
+        run: |
+          docker buildx imagetools inspect ghcr.io/${{ github.repository_owner }}/${{ needs.prepare.outputs.image_name }}:${{ needs.prepare.outputs.icecast_version }}
+
+      - name: Inspect DockerHub image
+        run: |
+          docker buildx imagetools inspect ${{ secrets.DOCKERHUB_USERNAME }}/${{ needs.prepare.outputs.image_name }}:${{ needs.prepare.outputs.icecast_version }}
