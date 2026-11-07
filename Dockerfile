@@ -24,8 +24,8 @@ RUN apk update && \
 
 WORKDIR /build
 
-RUN wget https://downloads.xiph.org/releases/igloo/libigloo-$LIBIGLOO_VERSION.tar.gz -O /build/libigloo-$LIBIGLOO_VERSION.tar.gz && \
-    wget https://downloads.xiph.org/releases/igloo/SHA512SUMS.txt -O /build/igloo-SHA512SUMS.txt && \
+RUN curl -fsSL -4 --retry 5 --retry-delay 3 --retry-all-errors -o /build/libigloo-$LIBIGLOO_VERSION.tar.gz https://downloads.xiph.org/releases/igloo/libigloo-$LIBIGLOO_VERSION.tar.gz && \
+    curl -fsSL -4 --retry 5 --retry-delay 3 --retry-all-errors -o /build/igloo-SHA512SUMS.txt https://downloads.xiph.org/releases/igloo/SHA512SUMS.txt && \
     sha512sum --ignore-missing --check igloo-SHA512SUMS.txt && \
     tar -xvf libigloo-$LIBIGLOO_VERSION.tar.gz -C .
 
@@ -38,8 +38,8 @@ RUN make install DESTDIR=/build/output
 
 WORKDIR /build
 
-RUN wget https://downloads.xiph.org/releases/icecast/icecast-$ICECAST_VERSION.tar.gz -O /build/icecast-$ICECAST_VERSION.tar.gz && \
-    wget https://downloads.xiph.org/releases/icecast/SHA512SUMS.txt -O /build/icecast-SHA512SUMS.txt && \
+RUN curl -fsSL -4 --retry 5 --retry-delay 3 --retry-all-errors -o /build/icecast-$ICECAST_VERSION.tar.gz https://downloads.xiph.org/releases/icecast/icecast-$ICECAST_VERSION.tar.gz && \
+    curl -fsSL -4 --retry 5 --retry-delay 3 --retry-all-errors -o /build/icecast-SHA512SUMS.txt https://downloads.xiph.org/releases/icecast/SHA512SUMS.txt && \
     sha512sum --ignore-missing --check icecast-SHA512SUMS.txt && \
     tar -xvf icecast-$ICECAST_VERSION.tar.gz -C .
     
