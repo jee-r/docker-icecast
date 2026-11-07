@@ -1,4 +1,4 @@
-FROM alpine:3.23 as builder
+FROM alpine:3.23 AS builder
 
 ARG ICECAST_VERSION="2.5.0" \
     LIBIGLOO_VERSION="0.9.5"
