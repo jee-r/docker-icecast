@@ -36,7 +36,7 @@ jobs:
           version: latest
           driver-opts: image=moby/buildkit:master
       - name: Build docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile
