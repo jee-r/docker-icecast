@@ -1,4 +1,4 @@
-FROM alpine:3.23 AS builder
+FROM alpine:3.24 AS builder
 
 ARG ICECAST_VERSION="2.5.0" \
     LIBIGLOO_VERSION="0.9.5"
@@ -55,7 +55,7 @@ RUN ./configure \
 
 RUN make install DESTDIR=/build/output
 
-FROM alpine:3.23
+FROM alpine:3.24
 
 LABEL name="docker-icecast" \
       maintainer="Jee jee@jeer.fr" \
