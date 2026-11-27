@@ -47,7 +47,7 @@ jobs:
           echo "ICECAST_MAJOR=$(echo ${ICECAST_VERSION} | cut -d. -f1)" >> $GITHUB_ENV
           echo "ICECAST_MINOR=$(echo ${ICECAST_VERSION} | cut -d. -f1-2)" >> $GITHUB_ENV
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v3
