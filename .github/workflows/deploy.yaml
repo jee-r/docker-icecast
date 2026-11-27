@@ -39,7 +39,7 @@ jobs:
       - name: print env
         run: echo $ENV
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Extract Icecast version from Dockerfile
         run: |
           ICECAST_VERSION=$(grep -oP 'ARG ICECAST_VERSION="\K[^"]+' Dockerfile)
